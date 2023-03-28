@@ -1,6 +1,5 @@
 import json
 import socket
-import time
 
 # Définir les informations de connexion
 host = ''  # Adresse IP locale du Raspberry Pi récepteur
@@ -23,6 +22,7 @@ def traiter_message(data):
     mac = message['mac']
     # message_recu = message['message']
     print("Adresse MAC de l'émetteur:", mac)
+
     # print("Message reçu:", message_recu)
 
 # Boucle principale pour écouter les connexions entrantes et traiter les messages
