@@ -24,28 +24,30 @@ def recup_adresses_ip_toute():
 def recuperer_connexion():
     ip_locale = IP(dst="0.0.0.0").src #
     liste = recup_adresses_ip_toute() #
-    liste.append(ip_locale)           # à retirer sur central
+    liste.insert(0, ip_locale)        # à retirer sur central
 
     for host in liste:
         try:
-            #print(f"Connexion à {host}...")
+            print(f"\rConnexion à {host} ", end="")
             client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             client.settimeout(2)
             client.connect((host, port))
-            #print(f"Connexion réussie avec l'hôte {host}")
-            print("ggggggggggggggggggggggggg")
+            # Connexion = central
             return client
         except:
             pass    # adresse != centrale
+    
+    print("")
 
 client = recuperer_connexion()
 mac = hex(uuid.getnode())[2:].upper()  
 
 def envoyer_message(message, autres = {}, ):
     data = json.dumps({'message': message, 'mac': mac} | autres).encode('utf-8')
+    client.sendall(len(data).to_bytes(32, byteorder='big'))
     client.sendall(data)
 
 envoyer_message("connexion", {'type_appareil': "camera"})
 envoyer_message("ouverture")
 
-client.close()
+client.close() # enlever sur central

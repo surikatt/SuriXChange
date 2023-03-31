@@ -1,0 +1,92 @@
+import RPi.GPIO as GPIO
+import time
+
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(22, GPIO.OUT)
+
+# notes de musique
+C = 261
+C_sharp = 277
+D = 294
+D_sharp = 311
+E = 329
+F = 349
+F_sharp = 370
+G = 391
+G_sharp = 415
+A = 440
+A_sharp = 466
+B = 493
+
+# dictionnaire de notes de musique
+notes = {
+    'C': C,
+    'C#': C_sharp,
+    'D': D,
+    'D#': D_sharp,
+    'E': E,
+    'F': F,
+    'F#': F_sharp,
+    'G': G,
+    'G#': G_sharp,
+    'A': A,
+    'A#': A_sharp,
+    'B': B
+}
+
+# jouer une note de musique
+def play_note(pitch, duration):
+    period = 1.0 / pitch
+    delay = period / 2
+    cycles = int(duration * pitch)
+
+    for i in range(cycles):
+        GPIO.output(22, True)
+        time.sleep(delay)
+        GPIO.output(22, False)
+        time.sleep(delay)
+
+# jouer une mélodie
+def play_melody(melody):
+    for note in melody:
+        pitch, duration = note
+        play_note(pitch, duration)
+
+# mélodie : thème musical de Dark Vador
+melody = [
+    (G, 1), (G, 1), (G, 1),
+    (D_sharp, 2),
+    (G, 1), (G, 1), (G, 1),
+    (D_sharp, 2),
+    (G, 1), (G, 1), (G, 1),
+    (D_sharp, 2),
+    (G, 1), (D_sharp, 2),
+    (G, 1), (G, 1), (G, 1), (D_sharp, 2),
+    (G, 1), (G, 1), (G, 1),
+    (D_sharp, 2),
+    (G, 1), (G, 1), (G, 1),
+    (D_sharp, 2),
+    (G, 1), (D_sharp, 2),
+    (G, 1), (G, 1), (G, 1), (D_sharp, 2),
+    (G, 1), (G, 1), (G, 1),
+    (D_sharp, 2),
+    (G, 1), (G, 1), (G, 1),
+    (D_sharp, 2),
+    (G, 1), (D_sharp, 2),
+    (G, 1), (G, 1), (G, 1), (D_sharp, 2),
+    (G, 1), (G, 1), (G, 1), (D_sharp, 2),
+    (G, 1), (G, 1), (G, 1),
+    (D_sharp, 2),
+    (G, 1), (G, 1), (G, 1),
+    (D_sharp, 2),
+    (G, 1)]
+
+
+# jouer la mélodie
+play_melody(melody)
+
+# éteindre le buzzer
+GPIO.output(22, False)
+
+# nettoyer les broches GPIO
+GPIO.cleanup()
