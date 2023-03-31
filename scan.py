@@ -1,30 +1,21 @@
-from scapy.all import ARP, Ether, srp
+from scapy.all import ARP, Ether, IP, srp
 import socket
 
-# Source: https://www.thepythoncode.com/article/building-network-scanner-using-scapy
+def recup_adress_ip():
+    ip_local = IP(dst="0.0.0.0").src
+    # print(ip_local)
+    target_ip = f"{ip_local}/24"
+    arp = ARP(pdst=target_ip)
+    ether = Ether(dst="ff:ff:ff:ff:ff:ff")
 
-target_ip = "192.168.1.1/24"
-# IP Address for the destination
-# create ARP packet
-arp = ARP(pdst=target_ip)
-# create the Ether broadcast packet
-# ff:ff:ff:ff:ff:ff MAC address indicates broadcasting
-ether = Ether(dst="ff:ff:ff:ff:ff:ff")
-# stack them
-packet = ether/arp
+    packet = ether/arp
+    result = srp(packet, timeout=3, verbose=0)[0]
 
-result = srp(packet, timeout=3, verbose=0)[0]
+    liste_ip = []
+    for sent, received in result:
+        liste_ip.append(received.psrc)
+    
+    return liste_ip
 
-# a list of clients, we will fill this in the upcoming loop
-clients = []
+print(recup_adress_ip())
 
-for sent, received in result:
-    # for each response, append ip and mac address to `clients` list
-    clients.append({'ip': received.psrc, 'mac': received.hwsrc})
-
-# print clients
-print("Available devices in the network:")
-print("IP" + " "*18+"MAC")
-
-for client in clients:
-    print("{:30} -> {:16}    {}".format(host, client['ip'], client['mac']))
