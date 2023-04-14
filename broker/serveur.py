@@ -35,9 +35,8 @@ def on_message(client, userdata, msg):
     
     if type_topic == "telephone":
         if content == "appareils":
-            donnee = list(bdd.recuperer_appareils())
-            print(donnee)
-            data = {"type": "appareils", "data": donnee}
+            appareils = list(bdd.recuperer_appareils())
+            data = {"type": "appareils", "data": appareils}
             client.publish(topic, json.dumps(data))
 
     if type_topic == "contacteur":

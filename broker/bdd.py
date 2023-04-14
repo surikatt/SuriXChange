@@ -34,7 +34,7 @@ def check_idcarte(idcarte):
     }})
 
 def recuperer_appareils() -> cursor.Cursor:
-    return appareils.find({}, {"nom": 1})
+    return appareils.find({}, {"_id": 0})
 
 def ajout_evenement(id_appareil: str, type: str):
     item_1 = {
