@@ -1,4 +1,4 @@
-from pymongo import MongoClient
+from pymongo import MongoClient, cursor
 from dotenv import load_dotenv
 import os
 
@@ -18,23 +18,30 @@ client = get_database()
 
 db = client.get_database("surikatt")
 appareils = db.get_collection("appareils")
+evenements = db.get_collection("evenements")
 
 utilisateurs = db.get_collection("utilisateurs")
-
-
-# item_1 = {
-#   "id_appareil" : "2",
-#   "nom" : "contacteur porte",
-#   "category" : "appareils"
-# }
-
-# appareils.insert_one(item_1)
 
 def check_apppareil(id):
     return appareils.find_one({'id_appareil': id})
 
 
 def check_idcarte(idcarte):
+    idcarte = idcarte.strip()
+    print(f"Check: \"{idcarte}\"")
     return utilisateurs.find_one({'cartes': {
         '$in': [idcarte]
     }})
+
+def recuperer_appareils() -> cursor.Cursor:
+    return appareils.find({}, {"nom": 1})
+
+def ajout_evenement(id_appareil: str, type: str):
+    item_1 = {
+  "id_appareil" : id_appareil,
+  "type" : type
+}
+    evenements.insert_one(item_1)
+
+def ajout_utilisateurs(nom_utilisateur: str, ):
+    utilisateurs.insert_one({"nom" : nom_utilisateur})

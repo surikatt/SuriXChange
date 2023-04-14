@@ -3,7 +3,7 @@ import time
 from multiprocessing import Process
 
 led = 3  # Broche GPIO à laquelle la LED est connectée =>5
-buzzer = 27 # => 13
+buzzer = 2 # => 13
 
 GPIO.setmode(GPIO.BCM)  # Configurer la numérotation des broches en BCM
 GPIO.setwarnings(False)
