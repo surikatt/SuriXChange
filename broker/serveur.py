@@ -1,8 +1,16 @@
 import paho.mqtt.client as mqtt
 import bdd
 import json
+from datetime import datetime, timedelta
+import multiprocessing
+from multiprocessing import Manager
+import time
 
 appareils_connectes = []
+
+
+manager = Manager()
+time_last_message = manager.dict()
 
 def on_connect(client: mqtt.Client, userdata, flags, rc):
     print("Connected with result code "+str(rc))
@@ -13,7 +21,7 @@ def on_connect(client: mqtt.Client, userdata, flags, rc):
     print("Connecté!")
 
 def on_message(client, userdata, msg):
-    global appareils_connectes
+    global appareils_connectes, time_last_message
 
     topic = msg.topic
     content = msg.payload.decode("utf-8")
@@ -21,8 +29,8 @@ def on_message(client, userdata, msg):
 
     print(type_topic)
 
-    if type_topic =="ping:1":
-        pass
+    print(f"Time: {time_last_message}")
+    time_last_message[id_appareil] = datetime.now()
 
 
     if topic not in appareils_connectes:
@@ -50,6 +58,18 @@ def on_message(client, userdata, msg):
             print("test1")
 
     print(f"Topic: {topic}; ID: {id_appareil}; MSG: {content}")
+
+def check_ping():
+    global time_last_message
+
+    while True:
+        for id, date in time_last_message.items(): 
+            if (datetime.now() - date) > timedelta(seconds=60):
+                ...
+        time.sleep(5)
+
+process_ping = multiprocessing.Process(target=check_ping)
+process_ping.start()
 
 client = mqtt.Client(reconnect_on_failure=True)
 client.on_connect = on_connect

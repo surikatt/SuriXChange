@@ -62,8 +62,6 @@ try:
                     sup_histo =  threading.Timer(5, suprimer_historique)
                     sup_histo.start()
                     
-                    
-
                     if len(tentative_en_cours) < len(code):
                         derniere_touche = presse
                         tentative_en_cours += presse
@@ -95,4 +93,3 @@ except KeyboardInterrupt:
     GPIO.setup(led_vert, GPIO.LOW)
     GPIO.setup(led_jaune, GPIO.LOW)
     GPIO.setup(led_rouge, GPIO.LOW)
-
