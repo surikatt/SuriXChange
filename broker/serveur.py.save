@@ -34,17 +34,16 @@ def on_message(client, userdata, msg):
         print(f"Utilisateur trouvé: {utilisateur}")
     
     if type_topic == "telephone":
-        if json.loads(content) == {"type": "requete", "requete": "appareils"}:
-            appareils = bdd.recuperer_appareils()
-            data = {"type": "appareils", "data": appareils}
-            client.publish(topic, json.dumps(data), qos=1)
+        if content == "appareils":
+            donne = bdd.recuperer_appareils()
+            print(donne)
+            data = {"type": "appareils", "data": []}
+            client.publish(topic, json.dumps(data))
 
     if type_topic == "contacteur":
         if content == "0":
-            print("test")
-        if content == "1":
-            print("test1")
-
+		if donne 
+    
     print(f"Topic: {topic}; ID: {id_appareil}; MSG: {content}")
 
 client = mqtt.Client(reconnect_on_failure=True)
@@ -53,9 +52,5 @@ client.on_message = on_message
 
 client.connect("172.16.26.102", 1883, 60)
 
-# Blocking call that processes network traffic, dispatches callbacks and
-# handles reconnecting.
-# Other loop*() functions are available that give a threaded interface and a
-# manual interface.
 client.loop_forever()          
 

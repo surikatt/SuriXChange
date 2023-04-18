@@ -33,8 +33,8 @@ def check_idcarte(idcarte):
         '$in': [idcarte]
     }})
 
-def recuperer_appareils() -> cursor.Cursor:
-    return appareils.find({}, {"_id": 0})
+def recuperer_appareils() -> list:
+    return list(appareils.find({}, {"_id": 0}))
 
 def ajout_evenement(id_appareil: str, type: str):
     item_1 = {
