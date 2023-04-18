@@ -39,7 +39,13 @@ def eteindre_rouge():
     GPIO.output(led_rouge, GPIO.LOW)
     pass
 
-
+def suprimer_historique():
+    global tentative_en_cours
+    tentative_en_cours = ""
+    print("code reinitialiser")
+    pass
+sup_histo =  threading.Timer(10, suprimer_historique)
+sup_histo.start()
 
 try:
     while True :
@@ -51,6 +57,11 @@ try:
                     presse = bouton [valeur_horizontale.index(x)][valeur_verticale.index(y)]
                     GPIO.output(led_jaune, GPIO.HIGH)
                     jaune = threading.Timer(0.2, eteindre_jaune).start()
+
+                    sup_histo.cancel()
+                    sup_histo =  threading.Timer(5, suprimer_historique)
+                    sup_histo.start()
+                    
                     
 
                     if len(tentative_en_cours) < len(code):

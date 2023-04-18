@@ -21,6 +21,10 @@ def on_message(client, userdata, msg):
 
     print(type_topic)
 
+    if type_topic =="ping:1":
+        pass
+
+
     if topic not in appareils_connectes:
         appareils_connectes.append(topic)
         appareil = bdd.check_apppareil(id_appareil)
