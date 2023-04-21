@@ -59,18 +59,20 @@ try:
                 if GPIO.input(x) == 1 :
                     presse = bouton [valeur_horizontale.index(x)][valeur_verticale.index(y)]
                     GPIO.output(led_jaune, GPIO.HIGH)
-                    jaune = threading.Timer(0.2, eteindre_jaune).start()
+                    threading.Timer(0.2, eteindre_jaune).start()
                     sup_histo.cancel()
-                    sup_histo =  threading.Timer(5, suprimer_historique)
+                    sup_histo = threading.Timer(5, suprimer_historique)
                     sup_histo.start()
-                    
 
+                    if presse == "C":
+                        sup_histo.cancel()
+                        suprimer_historique()
+                        presse = ""
 
                     if len(tentative_en_cours) < len(code):
                         derniere_touche = presse
                         tentative_en_cours += presse
                         print(tentative_en_cours) 
-
                         while GPIO.input(x) == 1:
                             pass 
 
@@ -81,13 +83,13 @@ try:
             if tentative_en_cours == code :
                 print("code validé")
                 GPIO.output(led_vert, GPIO.HIGH)
-                vert = threading.Timer(2, eteindre_vert).start()
+                threading.Timer(2, eteindre_vert).start()
                 tentative_en_cours = ""
                 sup_histo.cancel()
             else :
                 print("code erronné")
                 GPIO.output(led_rouge, GPIO.HIGH)
-                rouge = threading.Timer(2, eteindre_rouge).start()
+                threading.Timer(2, eteindre_rouge).start()
                 tentative_en_cours = ""
                 
 except KeyboardInterrupt:
