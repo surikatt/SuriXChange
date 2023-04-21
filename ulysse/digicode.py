@@ -42,8 +42,11 @@ def eteindre_rouge():
 def suprimer_historique():
     global tentative_en_cours
     tentative_en_cours = ""
+    GPIO.output(led_rouge, GPIO.HIGH)
+    threading.Timer(2, eteindre_rouge).start()
     print("code reinitialiser")
     pass
+
 sup_histo =  threading.Timer(10, suprimer_historique)
 sup_histo.start()
 
@@ -57,11 +60,12 @@ try:
                     presse = bouton [valeur_horizontale.index(x)][valeur_verticale.index(y)]
                     GPIO.output(led_jaune, GPIO.HIGH)
                     jaune = threading.Timer(0.2, eteindre_jaune).start()
-
                     sup_histo.cancel()
                     sup_histo =  threading.Timer(5, suprimer_historique)
                     sup_histo.start()
                     
+
+
                     if len(tentative_en_cours) < len(code):
                         derniere_touche = presse
                         tentative_en_cours += presse
@@ -79,6 +83,7 @@ try:
                 GPIO.output(led_vert, GPIO.HIGH)
                 vert = threading.Timer(2, eteindre_vert).start()
                 tentative_en_cours = ""
+                sup_histo.cancel()
             else :
                 print("code erronné")
                 GPIO.output(led_rouge, GPIO.HIGH)

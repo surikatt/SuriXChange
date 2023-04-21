@@ -45,3 +45,9 @@ def ajout_evenement(id_appareil: str, type: str):
 
 def ajout_utilisateurs(nom_utilisateur: str, ):
     utilisateurs.insert_one({"nom" : nom_utilisateur})
+
+def maj_status(id_appareil: str, est_connecte: bool):
+    appareils.update_one({"id_appareil" : id_appareil}, {"$set" : {"connecte" : est_connecte}})
+
+def ajout_carte(id_utilisateur: str, idcarte: str):
+    utilisateurs.update_one({"_id" : id_utilisateur}, {"$push" : {"cartes" : idcarte}})

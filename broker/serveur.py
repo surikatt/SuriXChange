@@ -6,10 +6,12 @@ import multiprocessing
 from multiprocessing import Manager
 import time
 
-appareils_connectes = []
+from notify_run import Notify 
+notify = Notify() 
 
 
 manager = Manager()
+appareils = manager.dict()
 time_last_message = manager.dict()
 
 def on_connect(client: mqtt.Client, userdata, flags, rc):
@@ -21,7 +23,7 @@ def on_connect(client: mqtt.Client, userdata, flags, rc):
     print("Connecté!")
 
 def on_message(client, userdata, msg):
-    global appareils_connectes, time_last_message
+    global appareils, time_last_message
 
     topic = msg.topic
     content = msg.payload.decode("utf-8")
@@ -30,13 +32,17 @@ def on_message(client, userdata, msg):
     print(type_topic)
 
     print(f"Time: {time_last_message}")
-    time_last_message[id_appareil] = datetime.now()
+    # time_last_message[id_appareil] = datetime.now()
 
-
-    if topic not in appareils_connectes:
-        appareils_connectes.append(topic)
+    if id_appareil not in appareils:
         appareil = bdd.check_apppareil(id_appareil)
         print(f"Appareil trouvé! {appareil}")
+
+    if appareils.get(id_appareil) == False:
+        notify.send(f'Appareil reconnecté! ID: {id_appareil}')
+        bdd.maj_status(id_appareil, True)
+
+    appareils[id_appareil] = datetime.now()
     
     if type_topic == "idcarte":
         utilisateur = bdd.check_idcarte(content)
@@ -60,12 +66,16 @@ def on_message(client, userdata, msg):
     print(f"Topic: {topic}; ID: {id_appareil}; MSG: {content}")
 
 def check_ping():
-    global time_last_message
+    global appareils
 
     while True:
-        for id, date in time_last_message.items(): 
-            if (datetime.now() - date) > timedelta(seconds=60):
-                ...
+        print(f"{appareils}")
+        for id, date in appareils.items(): 
+            print(f"Check: {id}, {date}")
+            if date != False and (datetime.now() - date) > timedelta(seconds=10):
+                appareils[id] = False
+                notify.send(f'Appareil déconnecté! ID: {id}')
+                bdd.maj_status(id, False)
         time.sleep(5)
 
 process_ping = multiprocessing.Process(target=check_ping)
