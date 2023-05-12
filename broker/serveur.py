@@ -12,7 +12,6 @@ notify = Notify()
 
 manager = Manager()
 appareils = manager.dict()
-time_last_message = manager.dict()
 
 
 def on_connect(client: mqtt.Client, userdata, flags, rc):
@@ -25,16 +24,25 @@ def on_connect(client: mqtt.Client, userdata, flags, rc):
 
 
 def on_message(client, userdata, msg):
-    global appareils, time_last_message
+    global appareils
 
     topic = msg.topic
+
+    if topic == "evenements":
+        return
+
     content = msg.payload.decode("utf-8")
     [type_topic, id_appareil] = topic.split(":")
 
     print(type_topic)
-
-    print(f"Time: {time_last_message}")
     # time_last_message[id_appareil] = datetime.now()
+
+    if type_topic == "telephone":
+        if json.loads(content) == {"type": "requete", "requete": "appareils"}:
+            data_appareils = bdd.recuperer_appareils()
+            data = {"type": "appareils", "data": data_appareils}
+            client.publish(topic, json.dumps(data), qos=1)
+        return
 
     if id_appareil not in appareils:
         appareil = bdd.check_apppareil(id_appareil)
@@ -43,6 +51,7 @@ def on_message(client, userdata, msg):
     if appareils.get(id_appareil) == False:
         notify.send(f'Appareil reconnecté! ID: {id_appareil}')
         bdd.maj_status(id_appareil, True)
+        envoyer_statut(id_appareil, True)
 
     appareils[id_appareil] = datetime.now()
 
@@ -53,12 +62,6 @@ def on_message(client, userdata, msg):
             return
         print(f"Utilisateur trouvé: {utilisateur}")
 
-    if type_topic == "telephone":
-        if json.loads(content) == {"type": "requete", "requete": "appareils"}:
-            data_appareils = bdd.recuperer_appareils()
-            data = {"type": "appareils", "data": data_appareils}
-            client.publish(topic, json.dumps(data), qos=1)
-
     if type_topic == "contacteur":
         if content == "0":
             print("test")
@@ -68,16 +71,32 @@ def on_message(client, userdata, msg):
     print(f"Topic: {topic}; ID: {id_appareil}; MSG: {content}")
 
 
+client = mqtt.Client(reconnect_on_failure=True)
+
+
+def envoyer_statut(id_appareil: str, connecte: bool):
+    print(f"Publish {id_appareil} {connecte}")
+    data = json.dumps({
+        "type": "maj",
+        "appareil": id_appareil,
+        "connecte": connecte
+    })
+
+    client.publish("evenements", data, qos=2)
+
+
 def check_ping():
     global appareils
 
     while True:
-        print(f"{appareils}")
+        print(f"Check: {len(appareils)}")
         for id, date in appareils.items():
-            print(f"Check: {id}, {date}")
-            if date != False and (datetime.now() - date) > timedelta(seconds=10):
+            # print(f"Check: {id}, {date}")
+            if date != False and (datetime.now() - date) > timedelta(seconds=25):
                 appareils[id] = False
-                notify.send(f'Appareil déconnecté! ID: {id}')
+                print("Deconnecté")
+                envoyer_statut(id, False)
+                # notify.send(f'Appareil déconnecté! ID: {id}')
                 bdd.maj_status(id, False)
         time.sleep(5)
 
@@ -85,7 +104,6 @@ def check_ping():
 process_ping = multiprocessing.Process(target=check_ping)
 process_ping.start()
 
-client = mqtt.Client(reconnect_on_failure=True)
 client.on_connect = on_connect
 client.on_message = on_message
 
@@ -95,4 +113,5 @@ client.connect("172.16.26.102", 1883, 60)
 # handles reconnecting.
 # Other loop*() functions are available that give a threaded interface and a
 # manual interface.
-client.loop_forever()
+client.loop_start()
+ 

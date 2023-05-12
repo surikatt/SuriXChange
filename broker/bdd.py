@@ -51,3 +51,6 @@ def maj_status(id_appareil: str, est_connecte: bool):
 
 def ajout_carte(id_utilisateur: str, idcarte: str):
     utilisateurs.update_one({"_id" : id_utilisateur}, {"$push" : {"cartes" : idcarte}})
+
+def alarme_etat(id_appareil: str, sonne: bool):
+    appareils.update_one({"id_appareil" : id_appareil}, {"$set" : {"etat" : sonne}})
