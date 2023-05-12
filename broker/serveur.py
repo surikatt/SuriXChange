@@ -6,13 +6,14 @@ import multiprocessing
 from multiprocessing import Manager
 import time
 
-from notify_run import Notify 
-notify = Notify() 
+from notify_run import Notify
+notify = Notify()
 
 
 manager = Manager()
 appareils = manager.dict()
 time_last_message = manager.dict()
+
 
 def on_connect(client: mqtt.Client, userdata, flags, rc):
     print("Connected with result code "+str(rc))
@@ -21,6 +22,7 @@ def on_connect(client: mqtt.Client, userdata, flags, rc):
     # reconnect then subscriptions will be renewed.
     client.subscribe("#", qos=2)
     print("Connecté!")
+
 
 def on_message(client, userdata, msg):
     global appareils, time_last_message
@@ -43,18 +45,18 @@ def on_message(client, userdata, msg):
         bdd.maj_status(id_appareil, True)
 
     appareils[id_appareil] = datetime.now()
-    
+
     if type_topic == "idcarte":
         utilisateur = bdd.check_idcarte(content)
         if utilisateur == None:
             print("Utilisateur non autorisé!")
             return
         print(f"Utilisateur trouvé: {utilisateur}")
-    
+
     if type_topic == "telephone":
         if json.loads(content) == {"type": "requete", "requete": "appareils"}:
-            appareils = bdd.recuperer_appareils()
-            data = {"type": "appareils", "data": appareils}
+            data_appareils = bdd.recuperer_appareils()
+            data = {"type": "appareils", "data": data_appareils}
             client.publish(topic, json.dumps(data), qos=1)
 
     if type_topic == "contacteur":
@@ -65,18 +67,20 @@ def on_message(client, userdata, msg):
 
     print(f"Topic: {topic}; ID: {id_appareil}; MSG: {content}")
 
+
 def check_ping():
     global appareils
 
     while True:
         print(f"{appareils}")
-        for id, date in appareils.items(): 
+        for id, date in appareils.items():
             print(f"Check: {id}, {date}")
             if date != False and (datetime.now() - date) > timedelta(seconds=10):
                 appareils[id] = False
                 notify.send(f'Appareil déconnecté! ID: {id}')
                 bdd.maj_status(id, False)
         time.sleep(5)
+
 
 process_ping = multiprocessing.Process(target=check_ping)
 process_ping.start()
@@ -91,5 +95,4 @@ client.connect("172.16.26.102", 1883, 60)
 # handles reconnecting.
 # Other loop*() functions are available that give a threaded interface and a
 # manual interface.
-client.loop_forever()          
-
+client.loop_forever()
