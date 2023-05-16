@@ -115,7 +115,6 @@ def on_message(client, userdata, msg):
     if id_appareil not in appareils:
         appareil = bdd.check_apppareil(id_appareil)
         print(f"Appareil trouvé! {appareil}")
-        bdd.ajout_evenement(id_appareil, "armement")
 
     if appareils.get(id_appareil) == False:
         notify.send(f'Appareil reconnecté! ID: {id_appareil}')
