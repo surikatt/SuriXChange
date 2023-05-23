@@ -70,4 +70,4 @@ def alarme_etat(id_appareil: str, sonne: bool):
 
 
 def recuperer_evenements() -> list:
-    return list(evenements.find({}, {"_id": 1}))
+    return list(evenements.find({}, {"_id": 0}))

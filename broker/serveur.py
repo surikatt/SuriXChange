@@ -1,3 +1,4 @@
+import digicode
 import paho.mqtt.client as mqtt
 import bdd
 import json
@@ -66,6 +67,7 @@ def alarme():
 def desarmer():
     global en_alerte, est_armee, buzzer_en_marche
 
+    Process(target=ihm.buzzer_correct).start()
     print("DESARMEMENT")
     print(buzzer_en_marche)
     buzzer_en_marche.value = False
@@ -73,6 +75,7 @@ def desarmer():
     en_alerte.value = False
     est_armee.value = False
     bdd.ajout_evenement("centrale", "desarmement")
+    ihm.led_off()
 
 
 def on_connect(client: mqtt.Client, userdata, flags, rc):
@@ -100,6 +103,7 @@ def on_message(client, userdata, msg):
 
     if type_topic == "telephone":
         data = json.loads(content)
+        print(data)
         if data == {"type": "requete", "requete": "appareils"}:
             data_appareils = bdd.recuperer_appareils()
             data = {"type": "appareils", "data": data_appareils}
@@ -107,7 +111,7 @@ def on_message(client, userdata, msg):
         elif data == {"type": "requete", "requete": "evenements"}:
             data_evenements = bdd.recuperer_evenements()
             data = {"type": "evenements", "data": data_evenements}
-            client.publish(topic, json.dumps(data), qos=1)
+            client.publish(topic, json.dumps(data, default=str), qos=1)
         elif data["type"] == "armement":
             bouton_appuye()
         return
@@ -130,7 +134,6 @@ def on_message(client, userdata, msg):
             Process(target=ihm.buzzer_incorrect).start()
             bdd.ajout_evenement("utisateur", "non autorisé")
             return
-        Process(target=ihm.buzzer_correct).start()
         print(alarme_proc)
         if not alarme_proc == None:
             alarme_proc.kill()
@@ -185,6 +188,7 @@ def check_ping():
 
 process_ping = multiprocessing.Process(target=check_ping)
 process_ping.start()
+Process(target=digicode.digicode, args=[desarmer]).start()
 
 client.on_connect = on_connect
 client.on_message = on_message
